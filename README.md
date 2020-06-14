@@ -2,50 +2,50 @@
 
 (c) 2020 Max Goren via/ MIT License (see LICENSE)
 
-Whats Here:
+###Whats Here:
 
 a wrapper for calling functions from the Doryen Library (libtcod) natively in Swift 4.2
 
-this wrapper was developed using:
-libtcod version 1.16 alpha 
-macOS 10.13.6
-XCode 10.1
-Swift 4.2
+####this wrapper was developed using:  
+ -libtcod version 1.16 alpha 
+ -macOS 10.13.6
+ -XCode 10.1
+ -Swift 4.2
 
 
-Getting started:
+###Getting started:
 
-add to your project:
-TCOD-wrapper.swift        -contains classes to call from your main.swift to use the functions and types available in libtcod
-TCOD-bridging-header.h    -tells Xcode to look in the libtcod headerfiles through its object-c bridge.
+####add to your project:
+-TCOD-wrapper.swift        -contains classes to call from your main.swift to use the functions and types available in libtcod
+-TCOD-bridging-header.h    -tells Xcode to look in the libtcod headerfiles through its object-c bridge.
 
 other requirements: libtcod - available at https://github.com/libtcod/libtcod
                                
-How to use:
+###How to use:
 
-import Foundation
+    import Foundation
 
-let title = "my swift tcod project"
-let tcod = TCOD()
+    let title = "my swift tcod project"
+    let tcod = TCOD()
 
-let width: Int32 = 80
-let height: Int32 = 50
-tcod.initRoot(w: width, h: height, title: title)
-tcod.clearConsole()
+    let width: Int32 = 80
+    let height: Int32 = 50
+    tcod.initRoot(w: width, h: height, title: title)
+    tcod.clearConsole()
 
-tcod.flush()
-
-while ( !tcod.windowisClosed() ) {
-
-    if (tcod.chkKeypress()) {
-    
-       tcod.printStr(x: 5, y: 5, str: "Hello, World!")
-       
-    }  
-    
     tcod.flush()
+    tcod.printStr(x: 5, y: 5, str: "Hello, World!")
+    while ( !tcod.windowisClosed() ) {
 
-}
+      if (tcod.chkKeypress()) {
+    
+         tcod.printStr(x: 5, y: 7, str: "Hello, Again!")
+       
+      }  
+    
+       tcod.flush()
 
-tcod.quit()
-exit(0)
+    }
+
+    tcod.quit()
+    exit(0)
