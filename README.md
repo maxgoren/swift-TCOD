@@ -21,8 +21,7 @@ TCOD-bridging-header.h    -tells Xcode to look in the libtcod headerfiles throug
 
 other requirements: libtcod - available at https://github.com/libtcod/libtcod
                                
-
-using the swift classes:
+How to use:
 
 import Foundation
 
@@ -35,11 +34,17 @@ tcod.initRoot(w: width, h: height, title: title)
 tcod.clearConsole()
 
 tcod.flush()
+
 while ( !tcod.windowisClosed() ) {
+
     if (tcod.chkKeypress()) {
+    
        tcod.printStr(x: 5, y: 5, str: "Hello, World!")
-    }   
+       
+    }  
+    
     tcod.flush()
+
 }
 
 tcod.quit()
