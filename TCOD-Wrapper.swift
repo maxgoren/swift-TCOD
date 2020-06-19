@@ -41,21 +41,16 @@ class TCOD {
     var shuffle_console: UnsafeMutablePointer<TCOD_Console>?
     var mouse: UnsafeMutablePointer<TCOD_mouse_t>?
     var rng = TCOD_random_t.self
-    //some usable types. wondering if we should use libtcod's random generator, or swifts.
+    let font_f = TCOD_font_flags_t(2)
     var key = TCOD_key_t()
     let colors = TCOD_color_t()
-
+    var tileset_t = TCOD_tileset_new(32, 32)
     init()
     {
       
     }
     
-    ///this is just a function for the purpose of getting structs and types working.
-    func test_area()
-    {
-    
-    
-    }
+
     ///check console for event for keypress.
     func chkKeypress() -> Bool {
         let i: Int32 = Int32(TCOD_sys_check_for_event(Int32(Float(TCOD_EVENT_KEY_PRESS.rawValue)), &key, mouse).rawValue)
@@ -66,12 +61,20 @@ class TCOD {
     }
     
     ///place a tile on the screen
-    func putTile(x: Int32, y: Int32, code: Int32) {
+    func putChar_ex(x: Int32, y: Int32, code: Int32) {
         TCOD_console_put_char_ex(tcod.console, x, y, code, TCOD_color_t(r: 255, g: 255, b: 255), TCOD_color_t(r: 0, g: 0, b: 0))
 
     }
     
-    ///display a random color on the screen
+    ///place a colored character on the screen. is that PC?
+    func putColorChar(x: Int32, y: Int32, char: String, color: TCOD_color_t)
+    {
+        let toBeSent = char.cString(using: .utf8)
+        TCOD_console_set_default_foreground(console, color)
+        TCOD_console_put_char(console, x, y,Int32(toBeSent![0]), bkgndf)
+    }
+    
+    ///display a char w/ random color on the screen
     func putRainbowChar(x: Int32, y: Int32, char: String) {
         let toBeSent = char.cString(using: .utf8)
         print(toBeSent![0])
@@ -97,6 +100,12 @@ class TCOD {
         TCOD_console_put_char(console, x, y, Int32(toBeSent![0]), bkgndf)
     }
     
+    ///same as putChar
+    func setChar(x: Int32, y: Int32, ch: Int32)
+    {
+        TCOD_console_set_char(console, x, y, ch)
+    }
+    
     
     ///variadic functions not accesible via Swift, so this is our own
     func printStr(x: Int32, y: Int32, str: String) {
@@ -107,11 +116,12 @@ class TCOD {
             nextX = nextX + 1
         }
     }
-    //used for printing 3 tiles as one tile
-    func printIcon(midval: Int32, x: Int32, y: Int32) {
-        self.setChar(x: x, y: y - 1, ch: midval - 1)
-        self.setChar(x: x, y: y, ch: midval)
-        self.setChar(x: x, y: y + 1, ch: midval + 1)
+    
+    
+    ///set the background color of the console
+    func setConsoleBG(col: TCOD_color_t) {
+        TCOD_console_set_default_background(console, col)
+        
     }
     
     
@@ -126,29 +136,36 @@ class TCOD {
         //jesus fucking christ.... im gonna have to put more thought into this
     }
     
-    ///blit?
+    ///blit le console
     func blit(xSrc: Int32, ySrc: Int32, wSrc: Int32, hSrc: Int32, xDst: Int32, yDst: Int32, fgalpha: Float, bgalpha: Float)
     {
         TCOD_console_blit(offscr_console, xSrc, ySrc, wSrc, hSrc, nil, xDst, yDst, fgalpha, bgalpha)
     }
     
+    
+    ///load tilesheet from file
     func loadTileSet(path: String, col: Int32, row: Int32, n: Int32) -> TCOD_Tileset {
        let Tfile = TCOD_tileset_load(path, col, row, n, nil).pointee
         return Tfile
     }
     
-    ///make the console a rectangle, clear is a bool to clear it or not.
-    func rect(x: Int32, y: Int32, w: Int32, h: Int32, clear: Bool)
-    {
-        TCOD_console_rect(console, x, y, w, h, clear, bkgndf)
-    }
     
     func loadFont(path: UnsafePointer<Int8>!, flags: TCOD_font_flags_t, charH: Int32, charV: Int32) {
         
         TCOD_console_set_custom_font(path, Int32(flags.rawValue), charH, charV)
     }
     
-    func setTile(code: Int32, chrX: Int32, chrY: Int32) {
+    func setAsciiCodes(sRow: Int32, eRow: Int32, stride: Int32, sChar: Int32)
+    {
+        var a = sChar
+        for t in sRow...eRow {
+            TCOD_console_map_ascii_codes_to_font(Int32(a), stride, 0, Int32(t))
+            a += stride
+        }
+    }
+    
+    ///map a tile to an ascii code
+    func setTileCode(code: Int32, chrX: Int32, chrY: Int32) {
         TCOD_console_map_ascii_code_to_font(code, chrX, chrY)
     }
     
@@ -158,7 +175,7 @@ class TCOD {
        let _ = TCOD_console_init_root(w, h, title, false, TCrenderer)
     }
     
-    ///make a fream around the window
+    ///make a frama around the window
     func frame(x: Int32, y: Int32, w: Int32, h: Int32, n: Int32, title: String, fg: UnsafePointer<TCOD_color_t>, bg: UnsafePointer<TCOD_color_t>, empty: Bool) {
         TCOD_console_printn_frame(console, x, y, w, h, n, title, fg, bg, bkgndf, empty)
     }
@@ -172,17 +189,21 @@ class TCOD {
     func hLine(x: Int32, y: Int32, length: Int32) {
         TCOD_console_hline(console, x, y, length, bkgndf)
     }
+    
+    ///make the console a rectangle, clear is a bool to clear it or not.
+    func rect(x: Int32, y: Int32, w: Int32, h: Int32, clear: Bool)
+    {
+        TCOD_console_rect(console, x, y, w, h, clear, bkgndf)
+    }
+    
+    
     ///returns if the console window is open or not
     func windowisClosed() -> Bool
     {
         let yesno: Bool = TCOD_console_is_window_closed()
         return yesno
     }
-    ///x position, y position, ascii code for charachter
-    func setChar(x: Int32, y: Int32, ch: Int32)
-    {
-        TCOD_console_set_char(console, x, y, ch)
-    }
+
     ///sets color of charachter ch is ascii code for char
     func setCharFG(x: Int32, y: Int32, ch: Int32, col: TCOD_color_t)
     {
@@ -247,14 +268,28 @@ class TCOD {
     func flush()
     {
         TCOD_console_flush()
+        
     }
 }
-    /*************************
-    *
-    * Welcome to pointer Hell.
-    **************************
-*/
- 
+/* I tried to do this differently, i tried a million ways */
+/* swift is really advanced and strong in some areas, but */
+/* it continues to suprise me with its odd quirks, especially when it comes*/
+/* to passing types and type conversions when dealing with C libraries */
+/* so all of the predefined colors in libtcod are useless to us */
+/* but we do still have the ability to create and define our own*/
+/* and that IS what this wrapper is all about, right? */
+
+    let stcodGreen = TCOD_ColorRGB(r: 0, g: 255, b: 0)
+    let stcodGrey = TCOD_ColorRGB(r: 128, g: 128, b: 128)
+    let stcodRed = TCOD_ColorRGB(r: 255, g: 0, b: 0)
+    let stcodBlue = TCOD_ColorRGB(r: 0, g: 0, b: 255)
+    let stcodYellow = TCOD_ColorRGB(r: 255, g: 255, b: 0)
+    let stcodPurple = TCOD_ColorRGB(r:128, g: 0, b: 128)
+    let stcodWhite = TCOD_ColorRGB(r: 255, g: 255, b: 255)
+    let stcodLime = TCOD_ColorRGB(r: 0,g: 255, b: 0)
+    let stcodFuscia = TCOD_ColorRGB(r: 255, g: 0, b: 255)
+
+
 class tcodbsp {
 
     let pos: Int32 = 0
