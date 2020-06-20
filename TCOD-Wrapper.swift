@@ -117,6 +117,11 @@ class TCOD {
         }
     }
     
+    ///set the background color of a char/tile
+    func setCharBG(x: Int32, y: Int32, col: TCOD_color_t)
+    {
+        TCOD_console_set_char_background(console, x, y, col, TCOD_BKGND_SET)
+    }
     
     ///set the background color of the console
     func setConsoleBG(col: TCOD_color_t) {
@@ -137,9 +142,9 @@ class TCOD {
     }
     
     ///blit le console
-    func blit(xSrc: Int32, ySrc: Int32, wSrc: Int32, hSrc: Int32, xDst: Int32, yDst: Int32, fgalpha: Float, bgalpha: Float)
+    func blit(xScr: Int32, yScr: Int32, wScr: Int32, hScr: Int32, xDst: Int32, yDst: Int32, fgalpha: Float, bgalpha: Float)
     {
-        TCOD_console_blit(offscr_console, xSrc, ySrc, wSrc, hSrc, nil, xDst, yDst, fgalpha, bgalpha)
+        TCOD_console_blit(console, xScr, yScr, wScr, hScr, nil, xDst, yDst, fgalpha, bgalpha)
     }
     
     
@@ -210,11 +215,7 @@ class TCOD {
         TCOD_console_set_char_foreground(console, x,y, col)
     }
     
-    ///sets background color of tile
-    func setCharBG(x: Int32, y: Int32, col: TCOD_color_t)
-    {
-        TCOD_console_set_char_background(console, x, y, col, bkgndf)
-    }
+
     /*
     func setDefaultFG(col: OpaquePointer?) {
         TCOD_console_set_default_foreground(console, boogaloo)
